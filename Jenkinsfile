@@ -12,7 +12,7 @@ pipeline {
             }
             steps {
                 script {
-                    app = docker.build("azamatus/train-schedule")
+                    app = docker.build("jamshidturgunov/train-schedule")
                     app.inside {
                         sh 'echo $(curl localhost:3000)'
                     }
@@ -39,16 +39,16 @@ pipeline {
             steps {
                 input 'Deploy to Production?'
                 milestone(1)
-                withCredentials([usernamePassword(credentialsId: 'webserver_login', usernameVariable: 'USERNAME', passwordVariable: 'USERPASS')]) {
+                withCredentials([usernamePassword(credentialsId: 'deploy_id', usernameVariable: 'USERNAME', passwordVariable: 'USERPASS')]) {
                     script {
-                        sh "sshpass -p '$USERPASS' -v ssh -o StrictHostKeyChecking=no $USERNAME@$stage_ip \"docker pull azamatus/train-schedule:${env.BUILD_NUMBER}\""
+                        sh "sshpass -p '$USERPASS' -v ssh -o StrictHostKeyChecking=no $USERNAME@$stage_ip \"docker pull jamshidturgunov/train-schedule:${env.BUILD_NUMBER}\""
                         try {
                             sh "sshpass -p '$USERPASS' -v ssh -o StrictHostKeyChecking=no $USERNAME@$stage_ip \"docker stop train-schedule\""
                             sh "sshpass -p '$USERPASS' -v ssh -o StrictHostKeyChecking=no $USERNAME@$stage_ip \"docker rm train-schedule\""
                         } catch (err) {
                             echo: 'caught error: $err'
                         }
-                        sh "sshpass -p '$USERPASS' -v ssh -o StrictHostKeyChecking=no $USERNAME@$stage_ip \"docker run --restart always --name train-schedule -p 3000:8080 -d azamatus/train-schedule:${env.BUILD_NUMBER}\""
+                        sh "sshpass -p '$USERPASS' -v ssh -o StrictHostKeyChecking=no $USERNAME@$stage_ip \"docker run --restart always --name train-schedule -p 3000:8080 -d jamshidturgunov/train-schedule:${env.BUILD_NUMBER}\""
                     }
                 }
             }
