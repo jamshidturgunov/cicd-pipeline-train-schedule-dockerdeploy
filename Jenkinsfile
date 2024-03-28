@@ -41,6 +41,11 @@ pipeline {
                 milestone(1)
                 withCredentials([usernamePassword(credentialsId: 'deploy_id', usernameVariable: 'USERNAME', passwordVariable: 'USERPASS')]) {
                     script {
+                    // Accessing the stage_ip parameter
+                    def ip = params.stage_ip
+                    echo "Stage IP: $ip"
+                }
+                    script {
                         sh "sshpass -p '$USERPASS' -v ssh -o StrictHostKeyChecking=no $USERNAME@$stage_ip \"docker pull jamshidturgunov/train-schedule:${env.BUILD_NUMBER}\""
                         try {
                             sh "sshpass -p '$USERPASS' -v ssh -o StrictHostKeyChecking=no $USERNAME@$stage_ip \"docker stop train-schedule\""
